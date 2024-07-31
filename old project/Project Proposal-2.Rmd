@@ -1,0 +1,94 @@
+---
+title: "Project Proposal"
+output: html_document
+date: "2024-07-16"
+---
+
+## Group 315:1
+
+## Members:
+
+Amber Kirkpatrick, Emmily Mandell, **Isabella Jiang**, Kejun Liu
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+library(tidyverse)
+```
+
+
+-   A brief description of how the group will communicate and work together.
+
+    -   When during the week can the group meet?
+
+        -   We will meet on Zoom at 6pm on Tuesdays each week. If needed we will meet again on Thursdays.
+
+    -   What platforms will the group use to communicate and share documents?
+
+        -   We will use Zoom for the weekly meetings and share our documents on Canvas.
+
+-   The question or questions of interest that motivate the planned study.
+
+    -   The topic selected must be unanimous among group members.
+
+        -   We decided to compare changes in CO2 emissions. and populations between a few countries over the 30 years (1992-2022).
+
+    -   Question: Is there a relationship between population changes by country and CO2 emissions from 1992 to 2022?
+
+
+-   The source(s) of data.
+
+    -   <https://data.worldbank.org/indicator/SP.POP.TOTL>
+
+    -   <https://ourworldindata.org/grapher/annual-co2-emissions-per-country>
+
+```{r, echo = FALSE}
+library(readxl)
+CO2_emission = read_csv("../../STAT240/data/annual-co2-emissions-per-country.csv")
+CO2_emission
+population = read_excel("../../STAT240/data/API_SP.POP.TOTL_DS2_en_excel_v2_1109993.xls",skip = 2)
+head(population)
+```
+
+
+-   A description of the data. Include in this description answers to these questions:
+
+    -   Data Description
+        
+        -   The carbon emission data include annual CO2 emission in each country from 1750-2022. 
+        -   The population data include population in each country from 1960-2023.
+
+    -   Who collected the data?
+
+        -   Our world in data is providing CO2 emission data and the world bank group is providing population data.
+
+    -   How was the data collected?
+
+        -   Population data is a collection of national census data. 
+        -   CO2 emission data is sourced from several original data providers, and our world in data conduct data processing such as standardizing country names and world region definitions, converting units etc.
+   
+
+
+
+-   What are key variables in the data set, what do they measure, and how are they related to your key questions?
+
+    -   Country Name, total population, CO2 emissions.
+
+    -   We are looking at how CO2 emissions change in correlation with the change in population by country.
+
+
+
+-   If the data may be thought of as a sample from some larger population, what is that larger population?
+
+    -   The larger population is global in the units of country.
+
+
+-   Include a description of a graph which will show how the data informs the primary question of interest.
+
+    -   Describe what variables you will include and what type of graph you will create.
+
+        -   Line graph with population on one axis and CO2 emissions on the other by country in each year 
+
+-   Include a description of a possible model for the data and associated methods of inference or prediction.
+
+    -   We will be using linear regression model for the data by conducting correlation coefficient in the two variables -- population and CO2 emission.
+

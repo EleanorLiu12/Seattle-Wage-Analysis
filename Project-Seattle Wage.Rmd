@@ -1,0 +1,391 @@
+---
+title: "STAT 240 Project - Wage in Seattle"
+author: "Kejun"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+### Setup details
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, fig.height = 3)
+library(tidyverse)
+library(scales)
+
+```
+
+- This project use the following scripts, assumed to be in the course scripts directory.
+    
+    `../../scripts/ggprob.R`
+    
+- This project use the Seattle hourly wage data.
+
+    `../data/City_of_Seattle_Wage_Data_20240723.csv`
+
+
+
+
+
+
+## Introduction
+
+- Seattle, located on the West Coast, has become an ideal destination for international students and potential immigrants seeking career opportunities. Among all the departments in Seattle, Information Technology (IT) department stands out as the highest paying department, within which information technology professionals and strategic advisors are the most promising positions. 
+
+- **Questions of interest:** 
+
+  - What are the best paying occupations in Seattle as of June 2024?
+
+  - Is there a statistically significant difference in the proportion of high earners (those earning above the median hourly rate) between information technology professionals and strategic advisors within the Information Technology department in the City of Seattle as of June 2024?
+
+- This analysis seeks to determine whether there is a statistically significant difference in the proportion of high earners between information technology professionals and strategic advisors. Understanding this difference can help STEM students make informed career decisions, especially who are interested in information technology.
+
+- **Thesis Statement:**  This report investigates the wage distribution among information technology professionals and strategic advisors in the city of Seattle's IT department, aiming to identify significant differences in the proportion of high earners between these two job titles. By applying statistical inference, we assert that there is a distinction in earning potential between these two roles. 
+
+
+
+
+## Background
+
+- The source of the data
+
+    https://data.seattle.gov/City-Business/City-of-Seattle-Wage-Data/2khk-5ukd/data_preview
+
+- How the data was collected
+
+  - The data was collected by the government (Seattle Department of Human Resources)
+
+- **Key variables in the data set**
+
+  - Department: The department in which the City of Seattle employee works. 
+  
+  - Job Title: The job title of the City of Seattle employee. 
+  
+  - Hourly Rate: The amount, listed in U.S. dollars, that the City of Seattle employee makes per hour. 
+
+- Unusual factors which may affect interpretation of results
+
+  - Sample Size and Distribution: A smaller sample size for strategic advisors compared to information technology professionals could affect the statistical power of the tests.
+    
+  - Job Title Classification: The way job titles are classified and reported may vary, potentially leading to inconsistencies. Differences in job responsibilities, even within the same job title, could influence hourly wages.
+    
+  - Outliers: The presence of outliers, such as extremely high or low hourly rates, can skew the distribution and affect the mean and median values. 
+
+- The rest of this report will proceed as follows: 
+
+  - Data Preparation: Only the related columns will remain in the analysis. Filters will be applied to include only employees from the Information Technology department with job titles "Information Technology Professional" and "Strategic Advisor."
+  
+  - Descriptive Statistics and Visualization: Key statistics such as mean and median hourly wages will be calculated. Visualizations including box plots, density plots with normal distribution overlays will be created.
+  
+  - Hypothesis Testing: A hypothesis test will be conducted to compare the proportion of high earners (those earning above the median hourly rate) between Information Technology Professionals and Strategic Advisors. 
+  
+  - Interpretation and Discussion: The implications of the findings for current and prospective employees, especially international CS students, will be discussed.
+
+
+
+
+## Analysis
+
+## Part 1: The highest paying department
+
+### Wage Analysis by Department 
+
+- Question:  Which departments pay higher wages for their employees?
+
+```{r}
+# Load the data
+seattle_wages <- read.csv("../data/City_of_Seattle_Wage_Data_20240723.csv")
+
+# Rename columns
+seattle_wages <- seattle_wages %>%
+  rename(hourly_rate = `Hourly.Rate`,
+         job_title = `Job.Title`)
+
+# Convert column names to lowercase
+colnames(seattle_wages) <- tolower(colnames(seattle_wages))
+
+# Calculate statistics for each department in a descending order
+department_stats <- seattle_wages %>%
+  group_by(department) %>%
+  summarise(
+    count = n(),
+    mean_hourly_rate = mean(hourly_rate, na.rm = TRUE),
+    median_hourly_rate = median(hourly_rate, na.rm = TRUE),
+  ) %>%
+  arrange(desc(mean_hourly_rate))
+```
+
+- As some positions have too few employees and not very representative, let's only analyze positions with more than 200 people in the sample.
+
+```{r}
+# Filter for departments with more than 100 employees
+over_200_employees <- department_stats %>%
+  filter(count > 200) %>%
+  arrange(desc(mean_hourly_rate))
+
+print(over_200_employees)
+```
+
+
+```{r}
+library(ggplot2)
+
+# Create a bar chart of mean hourly rate by department
+ggplot(over_200_employees, aes(x = reorder(department, mean_hourly_rate), y = mean_hourly_rate)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Mean Hourly Rate by Department (Departments with >200 Employees)",
+       x = "Department",
+       y = "Mean Hourly Rate (USD)") +
+  theme_minimal()
+```
+
+> Conclusion: The most money-making industry in Seattle is Information Technology, followed by the Police Department.
+
+
+
+## Part 2: The highest occupations within IT department
+
+### Inside IT Department 
+
+- Question: Inside the department with the highest wage, which positions are more promising?
+
+```{r}
+# Filter the data for the "Information Technology" department
+it_department <- seattle_wages %>%
+  filter(department == "Information Technology")
+
+# Merge job titles and calculate the mean hourly rate for each job title
+job_title_stats <- it_department %>%
+  group_by(job_title) %>%
+  summarise(
+    count = n(),
+    mean_hourly_rate = mean(hourly_rate, na.rm = TRUE),
+    median_hourly_rate = median(hourly_rate, na.rm = TRUE),
+  ) %>%
+  arrange(desc(mean_hourly_rate))
+
+print(job_title_stats)
+```
+
+> As some positions in IT department have too few employees (such as executives), we only analyze positions with more than 5 people in the sample.
+
+```{r}
+# Filter for job titles with more than 5 count
+filtered_job_title_stats <- job_title_stats %>%
+  filter(count > 5)
+
+# Create a bar chart to compare mean hourly rate by job title
+ggplot(filtered_job_title_stats, aes(x = reorder(job_title, mean_hourly_rate), y = mean_hourly_rate)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Mean Hourly Rate by Job Title in IT Department",
+       x = "Job Title",
+       y = "Mean Hourly Rate (USD)") +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 8),  
+    plot.title = element_text(size = 14, face = "bold"), 
+    axis.title.x = element_text(size = 12),  
+    axis.title.y = element_text(size = 12)  
+  )
+```
+
+> Conclusion: Apart from executives, information technology professionals and strategic advisors also have competitive wages in IT department, with larger numbers of positions. 
+
+
+### Information Technology Professionals
+
+> Examples of information technology professionals:
+
+  - Computer Programmer
+  - Software Engineer
+  - Computer Systems Analyst
+  - Computer Network Architect
+
+```{r}
+library(dplyr)
+library(stringr)
+library(ggplot2)
+
+wage_InfoProf <- it_department %>% 
+  filter(str_detect(job_title, "Info Technol Prof")) %>%
+  select(job_title, hourly_rate) %>% 
+  arrange(desc(hourly_rate))
+
+# Histogram for Information Technology Professionals with normal distribution curve
+p1 <- ggplot(wage_InfoProf, aes(x = hourly_rate)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, fill = "gold", color = "black") +
+  stat_function(fun = dnorm, args = list(mean = mean(wage_InfoProf$hourly_rate, na.rm = TRUE), sd = sd(wage_InfoProf$hourly_rate, na.rm = TRUE)), color = "darkred", linewidth = 1) +
+  labs(title = "Distribution of Hourly Rates for Information Technology Professionals",
+       x = "Hourly Rate",
+       y = "Density") +
+  theme_minimal()
+
+print(p1)
+
+
+```
+
+
+### Strategic Advisors 
+
+> What are strategic advisors?
+
+  - Strategic advisors apply a series of processes together with experience and data to enable the teams within an organization to make the best choices they are able to. 
+
+```{r}
+library(dplyr)
+library(stringr)
+library(ggplot2)
+
+wage_StratAdvsr <- it_department %>% 
+  filter(str_detect(job_title, "StratAdvsr")) %>%
+  group_by(job_title) %>% 
+  arrange(desc(hourly_rate))
+
+# Histogram for Strategic Advisors with normal distribution curve
+p2 <- ggplot(wage_StratAdvsr, aes(x = hourly_rate)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, fill = "blue", color = "black") +
+  stat_function(fun = dnorm, args = list(mean = mean(wage_StratAdvsr$hourly_rate, na.rm = TRUE), sd = sd(wage_StratAdvsr$hourly_rate, na.rm = TRUE)), color = "darkred", linewidth = 1) +
+  labs(title = "Distribution of Hourly Rates for Strategic Advisors",
+       x = "Hourly Rate",
+       y = "Density") +
+  theme_minimal()
+
+print(p2)
+
+```
+
+## Part 3: Hypothesis Testing
+
+- The following is a hypothesis test to determine if there is a significant difference in the proportion of high earners (those earning above the median hourly rate) between Information Technology Professionals and Strategic Advisors.
+
+### Statistical Model
+
+- **Variables**
+
+  - Y: The hourly wage of employees in the Information Technology department.
+  
+  - Z: A categorical variable indicating whether the job title is "Information Technology Professional" or "Strategic Advisor."
+  
+  - Median: The median hourly wage for the Information Technology department.
+  
+  - X: A binary variable where X = 1 if an employee's hourly wage is above the median hourly wage, and X = 0 otherwise.
+
+
+- **Assumptions**
+
+  - Independence: Each employee's wage is independent of others' wages.
+  
+  - Homogeneity: The probability of an employee being classified as a high earner (i.e., earning above the median hourly wage) is consistent within each job title category.
+  
+- **Hypothesis Testing**
+
+  - Null Hypothesis (H0): There is no difference in the proportion of high earners between Information Technology Professionals and Strategic Advisors.
+   
+  - Alternative Hypothesis (H1): There is a difference in the proportion of high earners between Information Technology Professionals and Strategic Advisors.
+  
+  
+  
+#### Calculate Proportions:
+
+Compute the proportion of high earners in groups of Information Technology Professionals and Strategic Advisors. 
+
+```{r}
+library(dplyr)
+library(stringr)
+library(ggplot2)
+
+# Calculate the median hourly rate for the IT department
+median_hourly_rate <- median(it_department$hourly_rate, na.rm = TRUE)
+
+# Create a binary variable indicating high earners
+it_department <- it_department %>%
+  mutate(high_earner = if_else(hourly_rate > median_hourly_rate, 1, 0))
+
+# Separate data for Information Technology Professionals and Strategic Advisors
+it_prof <- it_department %>%
+  filter(str_detect(job_title, "Info Technol Prof"))
+
+strat_advsrs <- it_department %>%
+  filter(str_detect(job_title, "StratAdvsr"))
+
+# Calculate number of high earners and total for each group
+n_info_prof <- nrow(it_prof)
+n_strat_advsrs <- nrow(strat_advsrs)
+x_info_prof <- sum(it_prof$high_earner)
+x_strat_advsrs <- sum(strat_advsrs$high_earner)
+
+# Proportions of high earners
+prop_info_prof <- x_info_prof / n_info_prof
+prop_strat_advsrs <- x_strat_advsrs / n_strat_advsrs
+
+
+```
+
+#### Agresti-Coull Confidence Intervals
+```{r}
+# Function to compute Agresti-Coull Confidence Interval
+agresti_coull <- function(successes, trials, confidence_level = 0.95) {
+  p_hat <- successes / trials
+   z <- qnorm((1 + confidence_level) / 2)
+  n <- trials
+  center <- (p_hat + z^2 / (2 * n)) / (1 + z^2 / n)
+  margin <- z * sqrt((p_hat * (1 - p_hat) + z^2 / (4 * n)) / n) / (1 + z^2 / n)
+  lower <- center - margin
+  upper <- center + margin
+  return(c(lower, upper))
+}
+
+# Compute Agresti-Coull Confidence Intervals
+ci_info_prof <- agresti_coull(x_info_prof, n_info_prof)
+ci_strat_advsrs <- agresti_coull(x_strat_advsrs, n_strat_advsrs)
+
+```
+
+#### Perform Hypothesis Test
+
+```{r}
+
+# Perform two-proportion z-test
+prop_test <- prop.test(c(x_info_prof, x_strat_advsrs), c(n_info_prof, n_strat_advsrs))
+
+# Confidence intervals for high earners in each group
+binom_test_info_prof <- binom.test(x_info_prof, n_info_prof, conf.level = 0.95)
+binom_test_strat_advsrs <- binom.test(x_strat_advsrs, n_strat_advsrs, conf.level = 0.95)
+
+# Print results
+cat("Agresti-Coull CI for Information Technology Professionals:", ci_info_prof, "\n")
+cat("Agresti-Coull CI for Strategic Advisors:", ci_strat_advsrs, "\n")
+```
+
+## Discussion
+
+  - The Agresti-Coull confidence interval for the proportion of high earners is [0.448,0.539]. This means we are 95% confident that the true proportion of high earners in the Information Technology Professionals group lies within this range.
+
+  - The Agresti-Coull confidence interval for the proportion of high earners is [0.731,0.902]. This indicates that we are 95% confident that the true proportion of high earners among Strategic Advisors falls within this interval.
+
+> Interpretation:
+
+  - Information Technology Professionals: The proportion of high earners is relatively moderate.
+
+  - Strategic Advisors: The confidence interval is notably higher, indicating a greater proportion of high earners compared to the Information Technology Professionals.
+
+
+## Summary
+
+- In the city of Seattle, employees in the department of Information Technology earn the highest salary, followed by the Police Department.
+
+- Among all the positions in the department of Information Technology, informational technology professionals and strategic advisors have the most lubricative wage.
+
+- Though informational technology professionals have the higher mean wage, strategic advisors have the higher proportion of high earners. 
+
+
+
+## References
+
+^[What are strategic advisors?] Retrieved from:    https://www.linkedin.com/pulse/20140926120242-322046-what-does-a-strategic-advisor-actually-do/
+
+^[Examples of information technology professionals] Retrieved from:   https://csuglobal.edu/blog/what-do-it-professionals-actually-do
+
+

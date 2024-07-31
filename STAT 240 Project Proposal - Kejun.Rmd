@@ -1,0 +1,84 @@
+---
+title: "Project Proposal"
+output: html_document
+date: "2024-07-24"
+---
+
+## Group 315:7
+
+## Members: 
+**Kejun Liu**
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+library(tidyverse)
+```
+
+A brief description of how the group will communicate and work together.
+
+    When during the week can the group meet?
+        N/A. This is an individual project.
+        
+    What platforms will the group use to communicate and share documents?
+        N/A.
+
+The question or questions of interest that motivate the planned study.
+
+    The topic selected must be unanimous among group members.
+    
+    Question: What are the best paying occupations in Seattle (2024) ?
+
+-   The source(s) of data.
+
+    https://data.seattle.gov/City-Business/City-of-Seattle-Wage-Data/2khk-5ukd/about_data
+
+```{r, echo = FALSE}
+library(readxl)
+
+Seattle_wage = read_csv("../../STAT 240/data/City_of_Seattle_Wage_Data_20240723.csv")
+```
+
+A description of the data. Include in this description answers to these questions:
+
+    Data Description:
+        Wage and classification information of City of Seattle Employees as of June 2024. Exclusions may apply for vulnerable populations.
+        
+    Who collected the data?
+        Seattle Department of Human Resources
+        
+    How was the data collected?
+        The data was collected by the government (Seattle Department of Human Resources).
+   
+What are key variables in the data set, what do they measure, and how are they related to your key questions?
+
+    Department: The department in which the City of Seattle employee works. This variable helps in identifying which department might offer more lucrative positions.
+    
+    Last Name: The last name (surname) of the City of Seattle employee. This variable is not directly relevant to the analysis of paying careers.	
+    
+    First Name: The first name of the City of Seattle employee. This variable is not directly relevant to the analysis of paying careers.
+    
+    Job Title: The job title of the City of Seattle employee. This variable helps in identifying which occupations are more profitable.
+    
+    Hourly Rate: The amount, listed in U.S. dollars, that the City of Seattle employee makes per hour. This variable is crucial for comparing wages and identifying the best paying careers.
+
+Include a description of a graph which will show how the data informs the primary question of interest.
+
+    The variables I will include
+      Department, Department, Hourly Rate
+      
+    The type of graph I will create:
+    
+      A bar graph will help answer the question by highlighting which departments generally offer higher hourly wages. By comparing the heights of the bars, one can easily identify which departments are more promising in terms of pay.
+      
+      A box plot will provide insight into the variability of wages within specific job titles, showing which titles have the highest median and the most substantial range of salaries. This will help in understanding which job titles are more lucrative and if there is significant variation within those titles.
+
+Include a description of a possible model for the data and associated methods of inference or prediction.
+
+    Possible Model: 
+    
+      A multiple linear regression model where the hourly rate is the dependent variable and the department and job title are the independent variables. This model will help quantify the relationship between different departments and job titles with hourly wages.
+    
+    Methods of Inference: 
+      Descriptive statistics to summarize data and regression analysis to predict hourly rates based on department and job title.
+
+
